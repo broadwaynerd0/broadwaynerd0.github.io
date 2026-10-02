@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NotmyPacket | CTF solutions, labs, pentest notes</title>
+<meta name="description" content="CTF solutions, labs, and pentest notes.">
+<style>
+:root{
+  --bg:#1b1e23; --panel:#242830; --ink:#d9dee5; --muted:#8b95a3;
+  --line:#343a45; --link:#7cb7ff; --chip:#2e3440;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 var(--sans)}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible{outline:2px solid var(--link);outline-offset:2px}
+header{border-bottom:1px solid var(--line);background:var(--panel)}
+.bar{max-width:900px;margin:0 auto;padding:14px 20px;display:flex;flex-wrap:wrap;gap:10px 28px;align-items:center;justify-content:space-between}
+.brand{font-size:22px;font-weight:700;color:var(--ink)}
+.brand:hover{text-decoration:none}
+nav{display:flex;flex-wrap:wrap;gap:6px 22px}
+nav a{color:var(--ink)}
+nav a.on{color:var(--link)}
+main{max-width:900px;margin:0 auto;padding:32px 20px 80px}
+h1{font-size:30px;margin:0 0 24px}
+.post{padding:22px 0;border-bottom:1px solid var(--line)}
+.date{color:var(--muted);font-size:14px;font-family:var(--mono)}
+.post h3{margin:2px 0 8px;font-size:23px;line-height:1.3}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px;padding:0;list-style:none}
+.tag{font:13px var(--mono);background:var(--chip);color:var(--link);border:0;border-radius:4px;padding:2px 8px;cursor:pointer}
+.tag:hover{text-decoration:underline}
+.summary{margin:0;color:var(--ink);max-width:70ch}
+.cloud{display:flex;flex-wrap:wrap;gap:10px}
+.cloud .tag{font-size:14px;padding:4px 10px}
+.cloud small{color:var(--muted);margin-left:4px}
+.note{color:var(--muted)}
+.clear{margin-left:12px;font-size:15px}
+p{max-width:68ch}
+footer{max-width:900px;margin:0 auto;padding:0 20px 40px;color:var(--muted);font-size:14px}
+@media (max-width:560px){.post h3{font-size:20px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <a class="brand" href="#/">NotmyPacket</a>
+    <nav aria-label="Main">
+      <a href="#/" data-nav="home">Home</a>
+      <a href="#/about" data-nav="about">About</a>
+      <a href="#/tags" data-nav="tags">Tags</a>
+      <!-- Add your own links here, for example GitHub or a cheatsheets page -->
+      <a href="https://github.com/broadwaynerd0">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="app" aria-live="polite"></main>
+<footer>&copy; <span id="y"></span> NotmyPacket</footer>
+
+<script>
+/* ---------- EDIT YOUR POSTS HERE ----------
+   One object per post, newest first.
+   url: link to the full writeup (a page in your repo or another site)
+   tags: lowercase, used for the Tags page and filtering */
+const POSTS = [
+  {
+    date: "2026-10-02",
+    title: "HTB: Example Box",
+    url: "#",
+    tags: ["ctf", "hackthebox", "nmap", "linux"],
+    summary: "Replace this with a short summary of the box: what you found on the initial scan, how you got a foothold, and how you escalated."
+  },
+  {
+    date: "2026-09-20",
+    title: "Lab notes: SMB enumeration",
+    url: "#",
+    tags: ["enumeration", "smb", "netexec", "active-directory"],
+    summary: "A second placeholder post. Delete or edit these entries when you add your real writeups."
+  }
+];
+
+const ABOUT = [
+  "NotmyPacket is where I keep notes, lab writeups and CTF solutions from learning offensive security.",
+  "Everything here comes from labs, CTFs, or systems I own or have explicit permission to test."
+];
+/* ------------------------------------------ */
+
+const app = document.getElementById("app");
+document.getElementById("y").textContent = new Date().getFullYear();
+
+function el(tag, props, ...kids){
+  const n = document.createElement(tag);
+  for (const k in (props||{})){
+    if (k === "class") n.className = props[k];
+    else if (k === "text") n.textContent = props[k];
+    else n.setAttribute(k, props[k]);
+  }
+  kids.forEach(c => c && n.appendChild(c));
+  return n;
+}
+function go(hash){ location.hash = hash; }
+function tagButton(t, extra){
+  const b = el("button", {class:"tag", type:"button", text:t});
+  b.addEventListener("click", () => go("#/tag/" + encodeURIComponent(t)));
+  if (extra) b.appendChild(extra);
+  return b;
+}
+function postView(p){
+  const tags = el("ul", {class:"tags"});
+  p.tags.forEach(t => tags.appendChild(el("li", null, tagButton(t))));
+  return el("article", {class:"post"},
+    el("div", {class:"date", text:p.date}),
+    el("h3", null, el("a", {href:p.url, text:p.title})),
+    tags,
+    el("p", {class:"summary", text:p.summary})
+  );
+}
+function renderList(title, posts, withClear){
+  app.replaceChildren();
+  const h = el("h1", {text:title});
+  if (withClear) h.appendChild(el("a", {class:"clear", href:"#/", text:"show all"}));
+  app.appendChild(h);
+  if (!posts.length) app.appendChild(el("p", {class:"note", text:"No posts here yet."}));
+  posts.forEach(p => app.appendChild(postView(p)));
+}
+function renderTags(){
+  app.replaceChildren(el("h1", {text:"Tags"}));
+  const counts = {};
+  POSTS.forEach(p => p.tags.forEach(t => counts[t] = (counts[t]||0) + 1));
+  const cloud = el("div", {class:"cloud"});
+  Object.keys(counts).sort().forEach(t => cloud.appendChild(tagButton(t, el("small", {text:counts[t]}))));
+  app.appendChild(cloud);
+}
+function renderAbout(){
+  app.replaceChildren(el("h1", {text:"About"}));
+  ABOUT.forEach(t => app.appendChild(el("p", {text:t})));
+}
+function route(){
+  const h = location.hash || "#/";
+  let section = "home";
+  if (h.startsWith("#/tag/")){
+    const t = decodeURIComponent(h.slice(6));
+    renderList("Tag: " + t, POSTS.filter(p => p.tags.includes(t)), true);
+    section = "tags";
+  } else if (h === "#/tags"){ renderTags(); section = "tags"; }
+  else if (h === "#/about"){ renderAbout(); section = "about"; }
+  else renderList("Posts", POSTS, false);
+  document.querySelectorAll("nav a[data-nav]").forEach(a =>
+    a.classList.toggle("on", a.dataset.nav === section));
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", route);
+route();
+</script>
+</body>
+</html>
